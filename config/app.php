@@ -2,6 +2,10 @@
 
 return [
 
+    'marvel_url' => env('MARVEL_URL', 'https://gateway.marvel.com/'),
+
+    'marvel_apikey' => env('MARVEL_APIKEY', null),
+
     /*
     |--------------------------------------------------------------------------
     | Application Name

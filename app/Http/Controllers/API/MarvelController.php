@@ -4,12 +4,43 @@ namespace App\Http\Controllers\API;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use GuzzleHttp\Client;
 
 class MarvelController extends Controller
 {
 
-    public function getPersonagemId($nome) {
+    public function __construct()
+    {
+//        $cliente = new \GuzzleHttp\Client();
+    }
 
+    public function gera_hash($timestamp) {
+        $chave_publica = config('app.marvel_publickey');
+        $chave_privada = config('app.marvel_privatekey');
+
+        return md5($timestamp.$chave_privada.$chave_publica);
+    }
+
+    public function getPersonagemId($nome) {
+        $client = new \GuzzleHttp\Client();
+        $hora_atual = new \DateTime();
+        $timestamp = $hora_atual->date;
+        $hash = gera_hash($timestamp);
+
+        $chave_publica = config('app.marvel_publickey');
+        $url_base = config('app.marvel_url');
+
+        $res = $client->request('GET', $url_base.'/v1/public/characters', [
+            'apikey' => $chave_publica,
+            'hash' => $hash,
+            'ts' => $timestamp,
+            'limit' => 1,
+            'name' => $nome,
+        ]);
+
+        return response()->json([
+            'id' => $nome
+        ], 200);
     }
 
     public function getHistorias($id_personagem) {

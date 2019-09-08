@@ -4,7 +4,9 @@ return [
 
     'marvel_url' => env('MARVEL_URL', 'https://gateway.marvel.com/'),
 
-    'marvel_apikey' => env('MARVEL_APIKEY', null),
+    'marvel_publickey' => env('MARVEL_PUBLICKEY', null),
+
+    'marvel_privatekey' => env('MARVEL_PRIVATEKEY', null),
 
     /*
     |--------------------------------------------------------------------------
@@ -71,7 +73,7 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    'timezone' => 'America/Sao_Paulo',
 
     /*
     |--------------------------------------------------------------------------

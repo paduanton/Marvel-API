@@ -49,7 +49,7 @@ class MarvelController extends Controller
         ], 200);
     }
 
-    public function getHistorias($id_personagem)
+    public function getHistoria($id_personagem)
     {
         $response_body = $this->guzzle->request('GET', $this->url_base . '/v1/public/characters/' . $id_personagem . '/stories', [
             'query' => [
@@ -85,7 +85,7 @@ class MarvelController extends Controller
         ], 200);
     }
 
-    public function getQuadrinhos($id_historia)
+    public function getQuadrinho($id_historia)
     {
         $response_body = $this->guzzle->request('GET', $this->url_base . '/v1/public/stories/' . $id_historia . '/comics', [
             'query' => [
@@ -102,7 +102,7 @@ class MarvelController extends Controller
         $info_quadrinhos = $quadrinhos['data']['results'];
 
         foreach ($info_quadrinhos as $key => $value) {
-            $imagem = $value["thumbnail"]["path"]."/portrait_uncanny.".$value["thumbnail"]["extension"];
+            $imagem = $value["thumbnail"]["path"] . "/portrait_uncanny." . $value["thumbnail"]["extension"];
             $response_quadrinhos[$key] = array
             (
                 'id' => $value["id"],
@@ -124,8 +124,29 @@ class MarvelController extends Controller
         ], 200);
     }
 
-    public function getPersonaem($id_personagem)
+    public function getPersonagem($id_personagem)
     {
-//        $this->guzzle
+        $response_body = $this->guzzle->request('GET', $this->url_base . '/v1/public/characters/' . $id_personagem, [
+            'query' => [
+                'apikey' => $this->chave_publica,
+                'hash' => $this->hash,
+                'ts' => $this->timestamp,
+            ]
+        ]);
+
+        $response = $response_body->getBody();
+        $personagem = json_decode($response, true);
+        $imagem = $personagem['data']['results'][0]['thumbnail']['path'] . "/portrait_uncanny." . $personagem['data']['results'][0]['thumbnail']['extension'];
+
+        $heroi = [
+            'nome' => $personagem['data']['results'][0]['name'],
+            'descricao' => $personagem['data']['results'][0]['description'],
+            'data_modificacao' => $personagem['data']['results'][0]['modified'],
+            'imagem' => $imagem
+        ];
+
+        return response()->json([
+            'personagem' => $heroi
+        ], 200);
     }
 }

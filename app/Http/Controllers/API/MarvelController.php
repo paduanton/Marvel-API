@@ -97,7 +97,48 @@ class MarvelController extends Controller
 
     public function getQuadrinhos($id_historia)
     {
+        $cliente = new \GuzzleHttp\Client();
+        $timestamp = uniqid(); // Carbon::now();
+        $hash = $this->gera_hash($timestamp);
 
+        $chave_publica = config('app.marvel_publickey');
+        $url_base = config('app.marvel_url');
+
+        $response_body = $cliente->request('GET', $url_base . '/v1/public/stories/' . $id_historia . '/comics', [
+            'query' => [
+                'apikey' => $chave_publica,
+                'hash' => $hash,
+                'ts' => $timestamp,
+                'orderBy' => 'onsaleDate'
+            ]
+        ]);
+
+        $response = $response_body->getBody();
+
+        $quadrinhos = json_decode($response, true);
+        $info_quadrinhos = $quadrinhos['data']['results'];
+
+        foreach ($info_quadrinhos as $key => $value) {
+            $imagem = $value["thumbnail"]["path"]."/portrait_uncanny.".$value["thumbnail"]["extension"];
+            $response_quadrinhos[$key] = array
+            (
+                'id' => $value["id"],
+                'digital_id' => $value["digitalId"],
+                'titulo' => $value["title"],
+                'descricao' => $value["description"],
+                'data_modificacao' => $value["modified"],
+                'formato' => $value["format"],
+//                'url_compra' => $value["urls"]["1"]["url"],
+                'data_venda' => $value["dates"]["0"]["date"],
+//                'data_compra_digital' => $value["dates"]["3"]["date"],
+                'preco_versao_digital' => $value["prices"]["0"]["price"],
+//                'preco_versao_fisica' => $value["prices"]["1"]["price"],
+                'imagem' => $imagem
+            );
+        }
+        return response()->json([
+            'quadrinhos' => $response_quadrinhos
+        ], 200);
     }
 
 }

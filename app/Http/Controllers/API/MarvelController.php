@@ -12,31 +12,28 @@ class MarvelController extends Controller
 
     public function __construct()
     {
-//        $cliente = new \GuzzleHttp\Client();
+        $this->guzzle = new \GuzzleHttp\Client();
+        $this->timestamp = uniqid(); // Carbon::now();
+        $this->hash = $this->gera_hash($this->timestamp);
+        $this->chave_publica = config('app.marvel_publickey');
+        $this->url_base = config('app.marvel_url');
     }
 
     public function gera_hash($timestamp)
     {
-        $chave_publica = config('app.marvel_publickey');
         $chave_privada = config('app.marvel_privatekey');
+        $chave_publica = config('app.marvel_publickey');
 
         return md5($timestamp . $chave_privada . $chave_publica);
     }
 
     public function getPersonagemId($nome)
     {
-        $cliente = new \GuzzleHttp\Client();
-        $timestamp = uniqid(); // Carbon::now();
-        $hash = $this->gera_hash($timestamp);
-
-        $chave_publica = config('app.marvel_publickey');
-        $url_base = config('app.marvel_url');
-
-        $response_body = $cliente->request('GET', $url_base . '/v1/public/characters', [
+        $response_body = $this->guzzle->request('GET', $this->url_base . '/v1/public/characters', [
             'query' => [
-                'apikey' => $chave_publica,
-                'hash' => $hash,
-                'ts' => $timestamp,
+                'apikey' => $this->chave_publica,
+                'hash' => $this->hash,
+                'ts' => $this->timestamp,
                 'limit' => 1,
                 'name' => $nome,
             ]
@@ -54,18 +51,11 @@ class MarvelController extends Controller
 
     public function getHistorias($id_personagem)
     {
-        $cliente = new \GuzzleHttp\Client();
-        $timestamp = uniqid(); // Carbon::now();
-        $hash = $this->gera_hash($timestamp);
-
-        $chave_publica = config('app.marvel_publickey');
-        $url_base = config('app.marvel_url');
-
-        $response_body = $cliente->request('GET', $url_base . '/v1/public/characters/' . $id_personagem . '/stories', [
+        $response_body = $this->guzzle->request('GET', $this->url_base . '/v1/public/characters/' . $id_personagem . '/stories', [
             'query' => [
-                'apikey' => $chave_publica,
-                'hash' => $hash,
-                'ts' => $timestamp,
+                'apikey' => $this->chave_publica,
+                'hash' => $this->hash,
+                'ts' => $this->timestamp,
                 'limit' => 5,
                 'orderBy' => 'id'
             ]
@@ -97,18 +87,11 @@ class MarvelController extends Controller
 
     public function getQuadrinhos($id_historia)
     {
-        $cliente = new \GuzzleHttp\Client();
-        $timestamp = uniqid(); // Carbon::now();
-        $hash = $this->gera_hash($timestamp);
-
-        $chave_publica = config('app.marvel_publickey');
-        $url_base = config('app.marvel_url');
-
-        $response_body = $cliente->request('GET', $url_base . '/v1/public/stories/' . $id_historia . '/comics', [
+        $response_body = $this->guzzle->request('GET', $this->url_base . '/v1/public/stories/' . $id_historia . '/comics', [
             'query' => [
-                'apikey' => $chave_publica,
-                'hash' => $hash,
-                'ts' => $timestamp,
+                'apikey' => $this->chave_publica,
+                'hash' => $this->hash,
+                'ts' => $this->timestamp,
                 'orderBy' => 'onsaleDate'
             ]
         ]);
@@ -141,4 +124,8 @@ class MarvelController extends Controller
         ], 200);
     }
 
+    public function getPersonaem($id_personagem)
+    {
+//        $this->guzzle
+    }
 }

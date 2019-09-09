@@ -18,3 +18,5 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::get('personagem/{nome}', 'API\MarvelController@getPersonagemId');
+
+Route::get('historias/{id_personagem}', 'API\MarvelController@getHistorias');

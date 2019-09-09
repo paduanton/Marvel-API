@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use GuzzleHttp\Client;
+use Carbon\Carbon;
 
 class MarvelController extends Controller
 {
@@ -22,24 +23,30 @@ class MarvelController extends Controller
     }
 
     public function getPersonagemId($nome) {
-        $client = new \GuzzleHttp\Client();
-        $hora_atual = new \DateTime();
-        $timestamp = $hora_atual->date;
-        $hash = gera_hash($timestamp);
+        $cliente = new \GuzzleHttp\Client();
+        $timestamp = uniqid(); // Carbon::now();
+        $hash = $this->gera_hash($timestamp);
 
         $chave_publica = config('app.marvel_publickey');
         $url_base = config('app.marvel_url');
 
-        $res = $client->request('GET', $url_base.'/v1/public/characters', [
-            'apikey' => $chave_publica,
-            'hash' => $hash,
-            'ts' => $timestamp,
-            'limit' => 1,
-            'name' => $nome,
+        $res = $cliente->request('GET', $url_base.'/v1/public/characters', [
+            'query' => [
+                'apikey' => $chave_publica,
+                'hash' => $hash,
+                'ts' => $timestamp,
+                'limit' => 1,
+                'name' => $nome,
+            ]
         ]);
 
+        $response = $res->getBody();
+
+        $personagem = json_decode($response, true);
+        $id = $personagem['data']['results'][0]['id'];
+
         return response()->json([
-            'id' => $nome
+            'id_personagem' => $id
         ], 200);
     }
 

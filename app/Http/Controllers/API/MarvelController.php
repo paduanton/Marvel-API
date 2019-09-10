@@ -139,14 +139,14 @@ class MarvelController extends Controller
         $image = $character['data']['results'][0]['thumbnail']['path'] . "/portrait_uncanny." . $character['data']['results'][0]['thumbnail']['extension'];
 
         $hero = [
-            'nome' => $character['data']['results'][0]['name'],
-            'descricao' => $character['data']['results'][0]['description'],
-            'data_modificacao' => $character['data']['results'][0]['modified'],
+            'name' => $character['data']['results'][0]['name'],
+            'description' => $character['data']['results'][0]['description'],
+            'modified' => $character['data']['results'][0]['modified'],
             'image' => $image
         ];
 
         return response()->json([
-            'personagem' => $hero
+            'hero' => $hero
         ], 200);
     }
 }

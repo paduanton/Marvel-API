@@ -17,7 +17,9 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('character/{name}', 'API\MarvelController@getCharacterId');
-Route::get('character/id/{id_character}', 'API\MarvelController@getCharacteryById');
-Route::get('character/stories/{id_character}', 'API\MarvelController@getStoriesByCharacterId');
-Route::get('character/comics/{id_story}', 'API\MarvelController@getComicsByStoryId');
+Route::middleware(['cors'])->group(function () {
+    Route::get('character/{name}', 'API\MarvelController@getCharacterId');
+    Route::get('character/id/{id_character}', 'API\MarvelController@getCharacteryById');
+    Route::get('character/stories/{id_character}', 'API\MarvelController@getStoriesByCharacterId');
+    Route::get('character/comics/{id_story}', 'API\MarvelController@getComicsByStoryId');
+});

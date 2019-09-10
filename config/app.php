@@ -2,7 +2,7 @@
 
 return [
 
-    'marvel_url' => env('MARVEL_URL', 'https://gateway.marvel.com/'),
+    'marvel_url' => env('MARVEL_URL', 'https://gateway.marvel.com/v1/public'),
 
     'marvel_publickey' => env('MARVEL_PUBLICKEY', null),
 

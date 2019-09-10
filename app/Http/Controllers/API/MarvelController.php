@@ -15,45 +15,45 @@ class MarvelController extends Controller
         $this->guzzle = new \GuzzleHttp\Client();
         $this->timestamp = uniqid(); // Carbon::now();
         $this->hash = $this->gera_hash($this->timestamp);
-        $this->chave_publica = config('app.marvel_publickey');
-        $this->url_base = config('app.marvel_url');
+        $this->public_key = config('app.marvel_publickey');
+        $this->base_url = config('app.marvel_url');
     }
 
     public function gera_hash($timestamp)
     {
         $chave_privada = config('app.marvel_privatekey');
-        $chave_publica = config('app.marvel_publickey');
+        $public_key = config('app.marvel_publickey');
 
-        return md5($timestamp . $chave_privada . $chave_publica);
+        return md5($timestamp . $chave_privada . $public_key);
     }
 
-    public function getPersonagemId($nome)
+    public function getCharacterId($name)
     {
-        $response_body = $this->guzzle->request('GET', $this->url_base . '/v1/public/characters', [
+        $response_body = $this->guzzle->request('GET', $this->base_url . '/characters', [
             'query' => [
-                'apikey' => $this->chave_publica,
+                'apikey' => $this->public_key,
                 'hash' => $this->hash,
                 'ts' => $this->timestamp,
                 'limit' => 1,
-                'name' => $nome,
+                'name' => $name,
             ]
         ]);
 
         $response = $response_body->getBody();
 
-        $personagem = json_decode($response, true);
-        $id = $personagem['data']['results'][0]['id'];
+        $character = json_decode($response, true);
+        $id = $character['data']['results'][0]['id'];
 
         return response()->json([
-            'id_personagem' => $id
+            'id' => $id
         ], 200);
     }
 
-    public function getHistoria($id_personagem)
+    public function getStoriesByCharacterId($id_character)
     {
-        $response_body = $this->guzzle->request('GET', $this->url_base . '/v1/public/characters/' . $id_personagem . '/stories', [
+        $response_body = $this->guzzle->request('GET', $this->base_url . '/characters/' . $id_character . '/stories', [
             'query' => [
-                'apikey' => $this->chave_publica,
+                'apikey' => $this->public_key,
                 'hash' => $this->hash,
                 'ts' => $this->timestamp,
                 'limit' => 5,
@@ -63,33 +63,33 @@ class MarvelController extends Controller
 
         $response = $response_body->getBody();
 
-        $historias = json_decode($response, true);
-        $info_historias = $historias['data']['results'];
+        $stories = json_decode($response, true);
+        $info_stories = $stories['data']['results'];
 
-        foreach ($info_historias as $key => $value) {
-            $response_historias[$key] = array
+        foreach ($info_stories as $key => $value) {
+            $response_stories[$key] = array
             (
                 'id' => $value["id"],
-                'titulo' => $value["title"],
-                'tipo' => $value["type"],
-                'data_modificacao' => $value["modified"],
-                'num_criadores' => $value["creators"]["available"],
-                'num_series' => $value["series"]["available"],
-                'num_quadrinhos' => $value["comics"]["available"],
-                'num_herois' => $value["characters"]["available"],
-                'num_eventos' => $value["events"]["available"]
+                'title' => $value["title"],
+                'type' => $value["type"],
+                'modified' => $value["modified"],
+                'creators' => $value["creators"]["available"],
+                'series' => $value["series"]["available"],
+                'comics' => $value["comics"]["available"],
+                'heroes' => $value["characters"]["available"],
+                'events' => $value["events"]["available"]
             );
         }
         return response()->json([
-            'historias' => $response_historias
+            'stories' => $response_stories
         ], 200);
     }
 
-    public function getQuadrinho($id_historia)
+    public function getComicsByStoryId($story_id)
     {
-        $response_body = $this->guzzle->request('GET', $this->url_base . '/v1/public/stories/' . $id_historia . '/comics', [
+        $response_body = $this->guzzle->request('GET', $this->base_url . '/stories/' . $story_id . '/comics', [
             'query' => [
-                'apikey' => $this->chave_publica,
+                'apikey' => $this->public_key,
                 'hash' => $this->hash,
                 'ts' => $this->timestamp,
                 'orderBy' => 'onsaleDate'
@@ -98,55 +98,55 @@ class MarvelController extends Controller
 
         $response = $response_body->getBody();
 
-        $quadrinhos = json_decode($response, true);
-        $info_quadrinhos = $quadrinhos['data']['results'];
+        $comics = json_decode($response, true);
+        $info_comics = $comics['data']['results'];
 
-        foreach ($info_quadrinhos as $key => $value) {
-            $imagem = $value["thumbnail"]["path"] . "/portrait_uncanny." . $value["thumbnail"]["extension"];
-            $response_quadrinhos[$key] = array
+        foreach ($info_comics as $key => $value) {
+            $image = $value["thumbnail"]["path"] . "/portrait_uncanny." . $value["thumbnail"]["extension"];
+            $response_comics[$key] = array
             (
                 'id' => $value["id"],
-                'digital_id' => $value["digitalId"],
+                'digitalId' => $value["digitalId"],
                 'titulo' => $value["title"],
-                'descricao' => $value["description"],
-                'data_modificacao' => $value["modified"],
-                'formato' => $value["format"],
+                'description' => $value["description"],
+                'modified' => $value["modified"],
+                'format' => $value["format"],
 //                'url_compra' => $value["urls"]["1"]["url"],
-                'data_venda' => $value["dates"]["0"]["date"],
+                'saleDate' => $value["dates"]["0"]["date"],
 //                'data_compra_digital' => $value["dates"]["3"]["date"],
-                'preco_versao_digital' => $value["prices"]["0"]["price"],
+                'digitalPrice' => $value["prices"]["0"]["price"],
 //                'preco_versao_fisica' => $value["prices"]["1"]["price"],
-                'imagem' => $imagem
+                'image' => $image
             );
         }
         return response()->json([
-            'quadrinhos' => $response_quadrinhos
+            'comics' => $response_comics
         ], 200);
     }
 
-    public function getPersonagem($id_personagem)
+    public function getCharacteryById($id_character)
     {
-        $response_body = $this->guzzle->request('GET', $this->url_base . '/v1/public/characters/' . $id_personagem, [
+        $response_body = $this->guzzle->request('GET', $this->base_url . '/characters/' . $id_character, [
             'query' => [
-                'apikey' => $this->chave_publica,
+                'apikey' => $this->public_key,
                 'hash' => $this->hash,
                 'ts' => $this->timestamp,
             ]
         ]);
 
         $response = $response_body->getBody();
-        $personagem = json_decode($response, true);
-        $imagem = $personagem['data']['results'][0]['thumbnail']['path'] . "/portrait_uncanny." . $personagem['data']['results'][0]['thumbnail']['extension'];
+        $character = json_decode($response, true);
+        $image = $character['data']['results'][0]['thumbnail']['path'] . "/portrait_uncanny." . $character['data']['results'][0]['thumbnail']['extension'];
 
-        $heroi = [
-            'nome' => $personagem['data']['results'][0]['name'],
-            'descricao' => $personagem['data']['results'][0]['description'],
-            'data_modificacao' => $personagem['data']['results'][0]['modified'],
-            'imagem' => $imagem
+        $hero = [
+            'nome' => $character['data']['results'][0]['name'],
+            'descricao' => $character['data']['results'][0]['description'],
+            'data_modificacao' => $character['data']['results'][0]['modified'],
+            'image' => $image
         ];
 
         return response()->json([
-            'personagem' => $heroi
+            'personagem' => $hero
         ], 200);
     }
 }
